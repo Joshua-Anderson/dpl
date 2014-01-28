@@ -94,12 +94,12 @@ describe DPL::Provider::Heroku do
     describe :deploy do
       example "not found error" do
         provider.should_receive(:api) { raise ::Heroku::API::Errors::NotFound.new("the message", api.get_error_action)}.at_least(:once)
-        expect { provider.deploy }.to raise_error(DPL::Error, "the message \nbody: \"error!\" (wrong app \"example\"?)")
+        expect { provider.deploy }.to raise_error(DPL::Error, "the message \nbody: \"nil\" (wrong app \"example\"?)")
       end
 
       example "unauthorized error" do
-        provider.should_receive(:api) { raise ::Heroku::API::Errors::Unauthorized.new("the message", api.body) }.at_least(:once)
-        expect { provider.deploy }.to raise_error(DPL::Error, 'the message (wrong API key?)')
+        provider.should_receive(:api) { raise ::Heroku::API::Errors::Unauthorized.new("the message", api.get_error_action) }.at_least(:once)
+        expect { provider.deploy }.to raise_error(DPL::Error, "the message \nbody: \"nil\" (wrong api key?)")
       end
     end
   end
