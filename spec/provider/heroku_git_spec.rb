@@ -26,7 +26,8 @@ describe DPL::Provider::Heroku do
     let :api do
       double "api",
         :get_user => double("get_user", :body => { "email" => "foo@bar.com" }),
-        :get_app  => double("get_app",  :body => { "name"  => "example", "git_url" => "GIT URL" })
+        :get_app  => double("get_app",  :body => { "name"  => "example", "git_url" => "GIT URL" }),
+        :get_error_action => double("get_error_action", :body => nil)
     end
 
     before do
@@ -92,12 +93,12 @@ describe DPL::Provider::Heroku do
 
     describe :deploy do
       example "not found error" do
-        provider.should_receive(:api) { raise ::Heroku::API::Errors::NotFound.new("the message", nil) }.at_least(:once)
-        expect { provider.deploy }.to raise_error(DPL::Error, 'the message (wrong app "example"?)')
+        provider.should_receive(:api) { raise ::Heroku::API::Errors::NotFound.new("the message", api.get_error_action)}.at_least(:once)
+        expect { provider.deploy }.to raise_error(DPL::Error, "the message \nbody: \"error!\" (wrong app \"example\"?)")
       end
 
       example "unauthorized error" do
-        provider.should_receive(:api) { raise ::Heroku::API::Errors::Unauthorized.new("the message", nil) }.at_least(:once)
+        provider.should_receive(:api) { raise ::Heroku::API::Errors::Unauthorized.new("the message", api.body) }.at_least(:once)
         expect { provider.deploy }.to raise_error(DPL::Error, 'the message (wrong API key?)')
       end
     end
